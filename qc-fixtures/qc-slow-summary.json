@@ -1,0 +1,17 @@
+{
+  "at": "2026-08-29T12:35:00.000Z",
+  "video": "https://www.youtube.com/watch?v=OjH6cCLo-Uw",
+  "cleanWer": {
+    "fullFile": 0.041,
+    "chunk6sNoPrompt": 0.051,
+    "chunk3_5sWithPrompt": 0.112
+  },
+  "playwrightWordCoverage": 1.0,
+  "applied": {
+    "chunkSeconds": 6,
+    "overlapSeconds": 1,
+    "whisperPrompt": false,
+    "provider": "groq"
+  },
+  "gate": "PASSED (clean WER 5.1% on best live config)"
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "t": "overlay-card",
+    "caps": "Can you tell me how you heard about this position?"
+  },
+  {
+    "t": "yt-caption-sample",
+    "caps": "in order to learn about the position you are applying for. It's also a chance to share if"
+  },
+  {
+    "t": "interview-classic",
+    "caps": "Tell me about yourself"
+  },
+  {
+    "t": "interview-classic-2",
+    "caps": "What are your greatest strengths"
+  }
+]

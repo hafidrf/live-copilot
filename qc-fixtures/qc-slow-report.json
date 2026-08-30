@@ -1,0 +1,202 @@
+{
+  "at": "2026-08-29T12:30:23.578Z",
+  "results": [
+    {
+      "name": "current-app (3.5s / prompt)",
+      "config": {
+        "name": "current-app (3.5s / prompt)",
+        "model": "whisper-large-v3-turbo",
+        "chunkSeconds": 3.5,
+        "overlapSeconds": 0.75,
+        "energyThreshold": 0.001,
+        "normalize": true,
+        "usePrompt": true
+      },
+      "wer": 0.639,
+      "dropped": 0,
+      "chunks": 22,
+      "hyp": "Hello everyone! Welcome back to English World! your English Learning Channel! Today we will talk about job interviews a job interview is a meeting with a company. The company asks questions about you. They want to know your skills, and your personality. Job interviews are very important They help the company choose the right person. They also help you learn about the job. Many people feel nervous in interviewing in interviews. Do not worry. Practice helps you feel comfortable. Practice helps you feel confident. Now we will start round one of the interview. This is usually the first meeting with the company. In this first round, they ask simply",
+      "ref": "Hello everyone, welcome back to English Hello everyone, welcome back to English World, your English learning channel. World, your English learning channel. World, your English learning channel. Today we will talk about job interviews. Today we will talk about job interviews. Today we will talk about job interviews. A job interview is a meeting with a A job interview is a meeting with a A job interview is a meeting with a company. The company asks questions company. The company asks questions com",
+      "raws": [
+        {
+          "t": "0.0",
+          "raw": "Hello everyone! Welcome back to English World!"
+        },
+        {
+          "t": "2.8",
+          "raw": "English World, your English Learning Channel!"
+        },
+        {
+          "t": "5.5",
+          "raw": "Today we will talk about"
+        },
+        {
+          "t": "8.3",
+          "raw": "job interviews a"
+        },
+        {
+          "t": "11.0",
+          "raw": "job interview is a meeting"
+        },
+        {
+          "t": "13.8",
+          "raw": "with a company. The company"
+        },
+        {
+          "t": "16.5",
+          "raw": "asks questions about you."
+        },
+        {
+          "t": "19.3",
+          "raw": "They want to know your skills,"
+        },
+        {
+          "t": "22.0",
+          "raw": "and your personality."
+        },
+        {
+          "t": "24.8",
+          "raw": "Job interviews are very"
+        },
+        {
+          "t": "27.5",
+          "raw": "important"
+        },
+        {
+          "t": "30.3",
+          "raw": "They help the company choose"
+        },
+        {
+          "t": "33.0",
+          "raw": "the right person."
+        },
+        {
+          "t": "35.8",
+          "raw": "They also help you learn about the job."
+        },
+        {
+          "t": "38.5",
+          "raw": "Many people"
+        },
+        {
+          "t": "41.3",
+          "raw": "feel nervous in interviewing"
+        },
+        {
+          "t": "44.0",
+          "raw": "in interviews."
+        },
+        {
+          "t": "46.8",
+          "raw": "Do not worry. Practice helps you feel comfortable."
+        },
+        {
+          "t": "49.5",
+          "raw": "Practice helps you feel confident."
+        },
+        {
+          "t": "52.3",
+          "raw": "Now we will start round one of the interview."
+        },
+        {
+          "t": "55.0",
+          "raw": "This is usually the first meeting with the company."
+        },
+        {
+          "t": "57.8",
+          "raw": "In this first round, they ask simply"
+        }
+      ]
+    },
+    {
+      "name": "best-candidate (6s / no-prompt)",
+      "config": {
+        "name": "best-candidate (6s / no-prompt)",
+        "model": "whisper-large-v3-turbo",
+        "chunkSeconds": 6,
+        "overlapSeconds": 1,
+        "energyThreshold": 0.001,
+        "normalize": true,
+        "usePrompt": false
+      },
+      "wer": 0.653,
+      "dropped": 0,
+      "chunks": 12,
+      "hyp": "Hello everyone! Welcome back to English World, your English learning channel. Today we will talk about Job Interviews A job interview is a meeting with a company. The company asks questions about you. They want to know your skills and your personality. Job interviews are very important. They help the company choose the right person. They also help you learn about the job. Many people feel nervous in interviews. Do not worry. Practice helps you feel confident. confident. Now we will start round one of the interview. This is usually the first meeting with the company. In this first round, they ask simply",
+      "ref": "Hello everyone, welcome back to English Hello everyone, welcome back to English World, your English learning channel. World, your English learning channel. World, your English learning channel. Today we will talk about job interviews. Today we will talk about job interviews. Today we will talk about job interviews. A job interview is a meeting with a A job interview is a meeting with a A job interview is a meeting with a company. The company asks questions company. The company asks questions com",
+      "raws": [
+        {
+          "t": "0.0",
+          "raw": "Hello everyone! Welcome back to English World, your English learning channel."
+        },
+        {
+          "t": "5.0",
+          "raw": "Today we will talk about Job Interviews"
+        },
+        {
+          "t": "10.0",
+          "raw": "A job interview is a meeting with a company."
+        },
+        {
+          "t": "15.0",
+          "raw": "with a company. The company asks questions about you."
+        },
+        {
+          "t": "20.0",
+          "raw": "They want to know your skills and your personality."
+        },
+        {
+          "t": "25.0",
+          "raw": "Job interviews are very important."
+        },
+        {
+          "t": "30.0",
+          "raw": "They help the company choose the right person."
+        },
+        {
+          "t": "35.0",
+          "raw": "They also help you learn about the job."
+        },
+        {
+          "t": "40.0",
+          "raw": "Many people feel nervous in interviews."
+        },
+        {
+          "t": "45.0",
+          "raw": "Do not worry. Practice helps you feel confident."
+        },
+        {
+          "t": "50.0",
+          "raw": "confident. Now we will start round one of the interview. This is usually the"
+        },
+        {
+          "t": "55.0",
+          "raw": "This is usually the first meeting with the company. In this first round, they ask simply"
+        }
+      ]
+    },
+    {
+      "name": "full-file once (baseline)",
+      "config": {
+        "name": "full-file once (baseline)",
+        "model": "whisper-large-v3-turbo",
+        "chunkSeconds": 60,
+        "overlapSeconds": 0,
+        "energyThreshold": 0,
+        "normalize": true,
+        "usePrompt": false
+      },
+      "wer": 0.657,
+      "dropped": 0,
+      "chunks": 1,
+      "hyp": "Hello everyone! Welcome back to English World, your English learning channel. Today we will talk about job interviews. A job interview is a meeting with a company. The company asks questions about you. They want to know your skills and your personality. Job interviews are very important. They help the company choose the right person. They also help you learn about the job. Many people feel nervous in interviews. Do not worry. Practice helps you feel confident. Now we will start round one of the interview. This is usually the first meeting with the company. In this first round, they ask simply",
+      "ref": "Hello everyone, welcome back to English Hello everyone, welcome back to English World, your English learning channel. World, your English learning channel. World, your English learning channel. Today we will talk about job interviews. Today we will talk about job interviews. Today we will talk about job interviews. A job interview is a meeting with a A job interview is a meeting with a A job interview is a meeting with a company. The company asks questions company. The company asks questions com",
+      "raws": [
+        {
+          "t": "0.0",
+          "raw": "Hello everyone! Welcome back to English World, your English learning channel. Today we will talk about job interviews. A job interview is a meeting with a company. The company asks questions about you. They want to know your skills and your personality. Job interviews are very important. They help the company choose the right person. They also help you learn about the job. Many people feel nervous in interviews. Do not worry. Practice helps you feel confident. Now we will start round one of the interview. This is usually the first meeting with the company. In this first round, they ask simply"
+        }
+      ]
+    }
+  ]
+}

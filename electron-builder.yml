@@ -1,0 +1,38 @@
+appId: com.livecopilot.desktop
+productName: Live Copilot
+directories:
+  buildResources: build
+  output: dist
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asarUnpack:
+  - 'resources/**'
+win:
+  executableName: LiveCopilot
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: LiveCopilot-${version}-setup.${ext}
+  shortcutName: Live Copilot
+  uninstallDisplayName: Live Copilot
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  runAfterFinish: false
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.png
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}.${ext}
+linux:
+  target:
+    - AppImage
+  maintainer: hafidrf
+  category: Utility
+npmRebuild: false

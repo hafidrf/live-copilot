@@ -1,0 +1,75 @@
+{
+  "at": "2026-08-29T12:07:50.476Z",
+  "models": {
+    "whisper-large-v3-turbo": {
+      "avgWer": 0,
+      "rows": [
+        {
+          "ref": "Can you tell me how you heard about this position?",
+          "hyp": "Can you tell me how you heard about this position?",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "Tell me about yourself and your background.",
+          "hyp": "Tell me about yourself and your background.",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "What are your greatest strengths as a software engineer?",
+          "hyp": "What are your greatest strengths as a software engineer?",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "Walk me through a challenging bug you fixed recently.",
+          "hyp": "Walk me through a challenging bug you fixed recently.",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "Why do you want to work at this company?",
+          "hyp": "Why do you want to work at this company?",
+          "wer": 0,
+          "chunks": 1
+        }
+      ]
+    },
+    "whisper-large-v3": {
+      "avgWer": 0,
+      "rows": [
+        {
+          "ref": "Can you tell me how you heard about this position?",
+          "hyp": "Can you tell me how you heard about this position?",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "Tell me about yourself and your background.",
+          "hyp": "Tell me about yourself and your background",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "What are your greatest strengths as a software engineer?",
+          "hyp": "What are your greatest strengths as a software engineer?",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "Walk me through a challenging bug you fixed recently.",
+          "hyp": "Walk me through a challenging bug you fixed recently",
+          "wer": 0,
+          "chunks": 1
+        },
+        {
+          "ref": "Why do you want to work at this company?",
+          "hyp": "Why do you want to work at this company?",
+          "wer": 0,
+          "chunks": 1
+        }
+      ]
+    }
+  }
+}

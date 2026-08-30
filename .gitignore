@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+
+# Environment (API keys — never commit)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Electron builder
+*.exe
+*.blockmap
+
+# ESLint cache
+.eslintcache
+
+# QC temp audio
+qc-fixtures/*.wav
+qc-fixtures/_tts*

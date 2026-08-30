@@ -1,0 +1,9 @@
+{
+  "name": "current-app (3.5s / prompt)",
+  "model": "whisper-large-v3-turbo",
+  "chunkSeconds": 3.5,
+  "overlapSeconds": 0.75,
+  "energyThreshold": 0.001,
+  "normalize": true,
+  "usePrompt": true
+}
