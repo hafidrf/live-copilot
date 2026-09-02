@@ -46,6 +46,7 @@ export interface AppOptions {
   contentProtection: boolean
   llmModel: string
   captionFontScale: number
+  referenceTopic: string
 }
 
 export interface AppSettingsView {

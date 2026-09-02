@@ -27,8 +27,11 @@ nsis:
 mac:
   category: public.app-category.productivity
   icon: build/icon.png
+  target:
+    - dmg
   notarize: false
 dmg:
+  sign: false
   artifactName: ${name}-${version}.${ext}
 linux:
   target:

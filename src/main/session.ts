@@ -9,13 +9,16 @@ import { enqueueTranslation } from './translator'
 import type { AudioChunk, SessionStatus, TranscriptSegment } from '../shared/types'
 
 const MAX_IN_FLIGHT = 2
-const FLUSH_IDLE_MS = 700
+const FLUSH_IDLE_MS = 1200
 const COST_PER_HOUR = 0.04 // whisper-large-v3-turbo
 
 /** Drop obvious Whisper hallucinations / junk. */
 export function isJunkTranscript(text: string): boolean {
   const t = text.trim()
   if (!t) return true
+  // HR question whitelist — never filter questions
+  if (t.endsWith('?')) return false
+  if (looksLikeQuestion(t)) return false
   const lower = t.toLowerCase()
   // Very common Whisper garbage on silence / music
   const junkExact = [
@@ -44,7 +47,7 @@ function normalizeWords(text: string): string[] {
 }
 
 /** Remove overlap between consecutive raw chunk transcripts only. */
-export function dedupeOverlap(previousRaw: string, nextRaw: string, maxWords = 8): string {
+export function dedupeOverlap(previousRaw: string, nextRaw: string, maxWords = 4): string {
   const prevWords = normalizeWords(previousRaw)
   const nextWords = normalizeWords(nextRaw)
   if (prevWords.length === 0 || nextWords.length === 0) return nextRaw.trim()
@@ -61,6 +64,8 @@ export function dedupeOverlap(previousRaw: string, nextRaw: string, maxWords = 8
   }
 
   if (best === 0) return nextRaw.trim()
+  // Guard: don't dedupe short next chunks where overlap would delete >50% (likely question)
+  if (nextWords.length <= 6 && best / nextWords.length > 0.5) return nextRaw.trim()
   return nextRaw.trim().split(/\s+/).slice(best).join(' ').trim()
 }
 
@@ -77,7 +82,50 @@ function splitSentences(buffer: string): { complete: string[]; rest: string } {
     lastIndex = re.lastIndex
   }
 
-  return { complete, rest: buffer.slice(lastIndex).trimStart() }
+  let rest = buffer.slice(lastIndex).trimStart()
+  // Fallback for Whisper missing punctuation: if no complete sentence but buffer is long, split on clause boundary
+  if (complete.length === 0 && rest.split(/\s+/).filter(Boolean).length > 32) {
+    const clauseRe = /\s+(and|but|so|then|which|that|because|when|where)\s+/gi
+    let bestIdx = -1
+    let bestDist = Infinity
+    const mid = rest.length / 2
+    let m: RegExpExecArray | null
+    while ((m = clauseRe.exec(rest)) !== null) {
+      const dist = Math.abs(m.index - mid)
+      if (dist < bestDist) {
+        bestDist = dist
+        bestIdx = m.index
+      }
+    }
+    if (bestIdx > 0) {
+      const firstPart = rest.slice(0, bestIdx).trim()
+      const secondPart = rest.slice(bestIdx).trimStart()
+      if (firstPart.split(/\s+/).filter(Boolean).length >= 8) {
+        complete.push(firstPart)
+        rest = secondPart
+      }
+    }
+  }
+
+  return { complete, rest }
+}
+
+function shouldMerge(a: string, b: string): boolean {
+  const aTrim = a.trim()
+  const bTrim = b.trim()
+  if (!aTrim || !bTrim) return false
+  const combined = `${aTrim} ${bTrim}`.trim()
+  const aWords = aTrim.split(/\s+/).filter(Boolean).length
+  const bWords = bTrim.split(/\s+/).filter(Boolean).length
+  // Don't merge if a is already a complete question
+  if (/[?]$/.test(aTrim) && looksLikeQuestion(aTrim)) return false
+  // If combined looks like question and a is short fragment without terminal punctuation
+  if (looksLikeQuestion(combined) && aWords < 12) return true
+  if (looksLikeQuestion(bTrim) && aWords < 10 && !/[.?!]$/.test(aTrim)) return true
+  if (aWords + bWords < 18 && looksLikeQuestion(combined)) return true
+  // Short fragments without punctuation likely belong together
+  if (aWords <= 12 && !/[.?!]$/.test(aTrim) && looksLikeQuestion(combined)) return true
+  return false
 }
 
 export class SessionPipeline {
@@ -98,6 +146,7 @@ export class SessionPipeline {
   private answering = false
   /** Rolling raw chunk texts for live caption (YouTube-like freshness). */
   private recentRaws: string[] = []
+  private lastChunkTime: number | null = null
 
   attach(win: BrowserWindow): void {
     this.win = win
@@ -158,6 +207,7 @@ export class SessionPipeline {
     this.assembled = ''
     this.lastRawChunk = ''
     this.recentRaws = []
+    this.lastChunkTime = null
     this.sentenceBuffer = ''
     this.segments = []
     this.lastError = null
@@ -224,7 +274,17 @@ export class SessionPipeline {
         if (isJunkTranscript(raw)) {
           logSttDebug({ seq: this.nextEmitSeq - 1, junk: true, raw })
         } else {
-          const cleaned = dedupeOverlap(this.lastRawChunk, raw)
+          const now = Date.now()
+          const timeGap = this.lastChunkTime !== null ? now - this.lastChunkTime : 0
+          this.lastChunkTime = now
+
+          let cleaned: string
+          if (timeGap > 4000) {
+            // Long pause (HR 1.2s+) — likely new utterance, skip dedupe to avoid deleting question
+            cleaned = raw.trim()
+          } else {
+            cleaned = dedupeOverlap(this.lastRawChunk, raw)
+          }
           this.lastRawChunk = raw.trim()
           this.recentRaws.push(raw.trim())
           if (this.recentRaws.length > 4) this.recentRaws.shift()
@@ -234,8 +294,22 @@ export class SessionPipeline {
             this.sentenceBuffer = `${this.sentenceBuffer} ${cleaned}`.replace(/\s+/g, ' ').trim()
 
             const { complete, rest } = splitSentences(this.sentenceBuffer)
-            this.sentenceBuffer = rest
-            for (const sentence of complete) {
+            // Question-aware merging: re-join fragments that belong to same question
+            let merged: string[] = []
+            for (const s of complete) {
+              if (merged.length > 0 && shouldMerge(merged[merged.length - 1], s)) {
+                merged[merged.length - 1] = `${merged[merged.length - 1]} ${s}`.replace(/\s+/g, ' ').trim()
+              } else {
+                merged.push(s)
+              }
+            }
+            // Also check if rest should be merged back to last complete (avoid splitting question)
+            if (merged.length > 0 && rest && shouldMerge(merged[merged.length - 1], rest)) {
+              this.sentenceBuffer = `${merged.pop()} ${rest}`.replace(/\s+/g, ' ').trim()
+            } else {
+              this.sentenceBuffer = rest
+            }
+            for (const sentence of merged) {
               void this.emitSentence(sentence)
             }
             this.scheduleFlush()
@@ -259,7 +333,11 @@ export class SessionPipeline {
     }
     const leftover = this.sentenceBuffer.trim()
     if (!leftover) return
-    if (!force && leftover.split(/\s+/).length < 4) return
+    if (!force && leftover.split(/\s+/).filter(Boolean).length < 5) return
+    if (!force && /^(can you|tell me|what|how|why|describe|explain)/i.test(leftover.trim()) && !/[.?!]$/.test(leftover.trim())) {
+      this.scheduleFlush()
+      return
+    }
     this.sentenceBuffer = ''
     void this.emitSentence(leftover)
     this.broadcastLiveCaption()
@@ -306,7 +384,7 @@ export class SessionPipeline {
 
     this.answering = true
     try {
-      const recent = this.segments.slice(-3).map((s) => s.text)
+      const recent = this.segments.slice(-6).map((s) => s.text)
       const answers = await generateAnswerOptions(target.text, recent)
       this.llmError = null
       const current = this.segments.find((s) => s.id === id)

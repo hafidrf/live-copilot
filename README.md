@@ -23,7 +23,7 @@ Think of it as Chrome Live Caption plus an interview copilot — useful for mock
 
 | Requirement | Notes |
 | --- | --- |
-| **Windows 10/11** | Primary target. System loopback capture is Windows-focused. |
+| **Windows 10/11** or **macOS 13+** | Windows primary, macOS supported (see macOS notes below). |
 | **Node.js 20+** | LTS recommended. |
 | **Groq API key** | Required for speech-to-text. Free tier available at [console.groq.com/keys](https://console.groq.com/keys). |
 | **LLM provider** | Groq (default), Gemini, DeepSeek, or local [9Router](http://127.0.0.1:20128) for translation + answers. |
@@ -66,6 +66,8 @@ The app prioritizes files whose names contain `intro`, `career`, or `screening`.
 
 ## Build a standalone app
 
+### Windows
+
 ```powershell
 npm run setup
 ```
@@ -80,7 +82,34 @@ Or build only:
 
 ```powershell
 npm run build:win
+# output: dist/LiveCopilot-1.0.0-setup.exe
 ```
+
+### macOS
+
+```bash
+git clone https://github.com/hafidrf/live-copilot.git
+cd live-copilot
+npm install
+npm run icon
+npm run build:mac
+# output: dist/live-copilot-1.0.0.dmg
+```
+
+Open the `.dmg`, drag **Live Copilot** to **Applications**, then run it. On first launch, macOS may block the app (unsigned build):
+
+```bash
+xattr -cr /Applications/Live\ Copilot.app
+# or: System Settings → Privacy & Security → Open Anyway
+```
+
+**Audio on macOS:** System audio capture requires **Screen Recording** permission:
+
+1. `System Settings → Privacy & Security → Screen Recording` → enable **Live Copilot** (restart app after).
+2. Play YouTube/Zoom via speakers and click **Listen**.
+3. Alternative: install [BlackHole](https://github.com/ExistentialAudio/BlackHole) (free virtual audio driver) and select it as input — the app auto-detects `BlackHole` devices.
+
+> Note: macOS builds are currently **unsigned** (`notarize: false`). For distribution, add Apple code signing + notarization in `electron-builder.yml`.
 
 ---
 
@@ -121,20 +150,26 @@ You can also set keys via environment variables at build/dev time (see `.env.exa
 
 ### “Could not start video source” / capture fails
 
-**Most common cause:** the app (or Cursor/terminal) is running **as Administrator**. Windows blocks screen/audio capture for elevated processes on Electron 37+.
+**Windows — most common cause:** the app (or Cursor/terminal) is running **as Administrator**. Windows blocks screen/audio capture for elevated processes on Electron 37+.
 
-**Fix:**
+**Fix (Windows):**
 
 1. Close Cursor / terminal completely.
 2. Reopen **without** “Run as administrator”.
 3. Run `npm run dev` again and click Listen.
 
-Other checks:
+Other checks (Windows):
 
 - Close other capture apps (OBS, ShareX) that may lock the audio device.
 - Make sure YouTube or your meeting is **audible on speakers** (not muted).
 - Allow **Screen capture** if Windows prompts for permission.
 - Optional fallback: enable **Stereo Mix** or a virtual cable (VB-Audio) in Windows Sound settings and select it as a loopback input.
+
+**macOS:**
+
+- Enable `System Settings → Privacy & Security → Screen Recording` for **Live Copilot**, then restart the app.
+- If still failing, install [BlackHole](https://github.com/ExistentialAudio/BlackHole) and select it as audio input.
+- Make sure audio is playing via speakers (not muted).
 
 ### No personalized answers / status shows `no context`
 

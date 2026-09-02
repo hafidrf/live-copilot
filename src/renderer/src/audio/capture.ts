@@ -248,52 +248,54 @@ async function acquireLoopbackStream(): Promise<MediaStream> {
     console.warn('getDisplayMedia failed, trying getUserMedia desktop fallback', err)
   }
 
-  // Path B: classic Electron chromeMediaSource — prefer browser window
-  try {
-    const screens = await window.api.listCaptureScreens()
-    const browserWin = screens.find(
-      (s) => s.id.startsWith('window:') && /chrome|msedge|brave|firefox|youtube/i.test(s.name)
-    )
-    const screen = browserWin ?? screens.find((s) => s.id.startsWith('screen:')) ?? screens[0]
-    if (!screen) {
-      throw new Error('Tidak ada layar/window yang bisa di-capture.')
-    }
+  // Path B: classic Electron chromeMediaSource — Windows-only, skip on macOS
+  if (navigator.platform?.toLowerCase().includes('mac') === false || !navigator.userAgent.includes('Mac')) {
+    try {
+      const screens = await window.api.listCaptureScreens()
+      const browserWin = screens.find(
+        (s) => s.id.startsWith('window:') && /chrome|msedge|brave|firefox|youtube/i.test(s.name)
+      )
+      const screen = browserWin ?? screens.find((s) => s.id.startsWith('screen:')) ?? screens[0]
+      if (!screen) {
+        throw new Error('Tidak ada layar/window yang bisa di-capture.')
+      }
 
-    const constraints = {
-      audio: {
-        mandatory: {
-          chromeMediaSource: 'desktop',
-          chromeMediaSourceId: screen.id
-        }
-      },
-      video: {
-        mandatory: {
-          chromeMediaSource: 'desktop',
-          chromeMediaSourceId: screen.id,
-          maxWidth: 1,
-          maxHeight: 1,
-          maxFrameRate: 1
+      const constraints = {
+        audio: {
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: screen.id
+          }
+        },
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: screen.id,
+            maxWidth: 1,
+            maxHeight: 1,
+            maxFrameRate: 1
+          }
         }
       }
-    }
 
-    const stream = await navigator.mediaDevices.getUserMedia(
-      constraints as unknown as MediaStreamConstraints
-    )
-    if (stream.getAudioTracks().length > 0) return stream
-    stream.getTracks().forEach((t) => t.stop())
-  } catch (err) {
-    console.warn('desktop getUserMedia failed, trying Stereo Mix / cable input', err)
+      const stream = await navigator.mediaDevices.getUserMedia(
+        constraints as unknown as MediaStreamConstraints
+      )
+      if (stream.getAudioTracks().length > 0) return stream
+      stream.getTracks().forEach((t) => t.stop())
+    } catch (err) {
+      console.warn('desktop getUserMedia failed, trying Stereo Mix / cable input', err)
+    }
   }
 
-  // Path C: Stereo Mix / VB-Cable / virtual loopback as normal mic device
+  // Path C: Stereo Mix / VB-Cable / BlackHole / virtual loopback as normal mic device
   try {
     await navigator.mediaDevices.getUserMedia({ audio: true, video: false }).catch(() => null)
     const devices = await navigator.mediaDevices.enumerateDevices()
     const loopbackish = devices.find(
       (d) =>
         d.kind === 'audioinput' &&
-        /stereo mix|cable|vb-?audio|what.?u.?hear|loopback|wave out|speakers \(.*loop/i.test(
+        /stereo mix|cable|vb-?audio|what.?u.?hear|loopback|wave out|speakers \(.*loop|blackhole/i.test(
           d.label
         )
     )
@@ -307,6 +309,12 @@ async function acquireLoopbackStream(): Promise<MediaStream> {
     console.warn('stereo-mix path failed', err)
   }
 
+  const isMac = navigator.platform?.toLowerCase().includes('mac') || navigator.userAgent.includes('Mac')
+  if (isMac) {
+    throw new Error(
+      'Gagal capture audio sistem di macOS. Aktifkan Screen Recording: System Settings → Privacy & Security → Screen Recording → aktifkan Live Copilot. Atau install BlackHole (https://github.com/ExistentialAudio/BlackHole) lalu pilih BlackHole sebagai input. Pastikan YouTube berbunyi.'
+    )
+  }
   throw new Error(
     'Gagal capture audio sistem (Could not start video source). Penyebab tersering: app dijalankan sebagai Administrator — tutup Cursor, buka tanpa admin. Atau aktifkan Stereo Mix di Sound settings. Pastikan YouTube berbunyi di speaker.'
   )

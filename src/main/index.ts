@@ -20,11 +20,13 @@ let isQuitInProgress = false
 const elevated = isProcessElevated()
 
 // Electron 37+ on Windows: WGC screen capture fails when elevated (0x80070005).
-// Prefer older DXGI path when possible.
-app.commandLine.appendSwitch(
-  'disable-features',
-  'WebRtcAllowWgcDesktopCapturer,AllowWgcScreenCapturer,AllowWgcWindowCapturer'
-)
+// Prefer older DXGI path when possible. Windows-only — skip on macOS/Linux.
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch(
+    'disable-features',
+    'WebRtcAllowWgcDesktopCapturer,AllowWgcScreenCapturer,AllowWgcWindowCapturer'
+  )
+}
 
 function resolveAppIcon(): string | undefined {
   const buildPng = join(__dirname, '../../build/icon.png')
@@ -54,8 +56,8 @@ function placeBottomCenter(win: BrowserWindow): void {
   win.setPosition(x + display.workArea.x, y + display.workArea.y)
 }
 
-const COMPACT = { width: 980, height: 360 }
-const EXPANDED = { width: 1120, height: 640 }
+const COMPACT = { width: 980, height: 460 }
+const EXPANDED = { width: 1180, height: 760 }
 
 function createWindow(): BrowserWindow {
   const icon = resolveAppIcon()
@@ -63,7 +65,7 @@ function createWindow(): BrowserWindow {
     width: COMPACT.width,
     height: COMPACT.height,
     minWidth: 640,
-    minHeight: 220,
+    minHeight: 320,
     show: false,
     frame: false,
     transparent: true,

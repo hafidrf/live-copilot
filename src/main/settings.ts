@@ -17,7 +17,8 @@ const DEFAULT_OPTIONS: AppOptions = {
   contextFolder: null,
   contentProtection: false,
   llmModel: 'llama-3.3-70b-versatile',
-  captionFontScale: 1
+  captionFontScale: 1,
+  referenceTopic: ''
 }
 
 interface SettingsFile {
@@ -33,6 +34,7 @@ interface SettingsFile {
   contentProtection?: boolean
   llmModel?: string
   captionFontScale?: number
+  referenceTopic?: string
 }
 
 function settingsPath(): string {
@@ -180,7 +182,8 @@ export function getOptions(): AppOptions {
     contextFolder: s.contextFolder ?? null,
     contentProtection: Boolean(s.contentProtection),
     llmModel: s.llmModel?.trim() || DEFAULT_OPTIONS.llmModel,
-    captionFontScale: clampFontScale(s.captionFontScale)
+    captionFontScale: clampFontScale(s.captionFontScale),
+    referenceTopic: s.referenceTopic?.trim() ?? ''
   }
 }
 
@@ -205,6 +208,9 @@ export function saveOptions(partial: SaveOptionsPartial): AppOptions {
   }
   if (partial.captionFontScale !== undefined) {
     next.captionFontScale = clampFontScale(partial.captionFontScale)
+  }
+  if (partial.referenceTopic !== undefined) {
+    next.referenceTopic = partial.referenceTopic.trim().slice(0, 200)
   }
 
   writeSettings(next)

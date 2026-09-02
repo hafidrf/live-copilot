@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { startSystemAudioCapture, type AudioCaptureHandle } from './audio/capture'
 import type {
   AnswerOption,
@@ -33,6 +33,17 @@ const PROVIDER_META: Record<LlmProvider, { name: string; hint: string; placehold
   }
 }
 
+const TOPIC_PRESETS = [
+  'React Native',
+  'Flutter',
+  'Frontend',
+  'Backend',
+  'System Design',
+  'Behavioral',
+  'Performance',
+  'State Management'
+]
+
 const EMPTY_STATUS: SessionStatus = {
   listening: false,
   error: null,
@@ -41,6 +52,55 @@ const EMPTY_STATUS: SessionStatus = {
   inFlightRequests: 0,
   sttRequests: 0,
   estimatedCostUsd: 0
+}
+
+const TAB_META: Record<string, { label: string; sub: string; icon: string }> = {
+  instant: { label: 'Jawab Cepat', sub: '30s', icon: '⚡' },
+  star: { label: 'STAR Lengkap', sub: '90s', icon: '⭐' },
+  power: { label: 'Power Close', sub: 'closing', icon: '🔥' }
+}
+
+const KW_RE =
+  /\b(React Native|System Design|State Management|STAR|Situation|Task|Action|Result|Frontend|Backend|Flutter|React|Performance|Behavioral|closing|leadership|scalability|optimization|architecture)\b/gi
+
+function renderHighlighted(text: string): ReactNode {
+  if (!text) return null
+  const parts = text.split(/(\*\*.*?\*\*)/g)
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      const inner = part.slice(2, -2)
+      const segs = inner.split(KW_RE)
+      return (
+        <strong key={idx}>
+          {segs.map((seg, j) => {
+            const isKw = !!seg && new RegExp(`^(?:${KW_RE.source})$`, 'i').test(seg)
+            return isKw ? (
+              <span key={j} className="kw">
+                {seg}
+              </span>
+            ) : (
+              seg
+            )
+          })}
+        </strong>
+      )
+    }
+    const segs = part.split(KW_RE)
+    return (
+      <span key={idx}>
+        {segs.map((seg, j) => {
+          const isKw = !!seg && new RegExp(`^(?:${KW_RE.source})$`, 'i').test(seg)
+          return isKw ? (
+            <span key={j} className="kw">
+              {seg}
+            </span>
+          ) : (
+            seg
+          )
+        })}
+      </span>
+    )
+  })
 }
 
 export default function App(): ReactElement {
@@ -59,6 +119,7 @@ export default function App(): ReactElement {
   const [answerTab, setAnswerTab] = useState<string>('instant')
   const [copied, setCopied] = useState(false)
   const [elevated, setElevated] = useState(false)
+  const [topicDraft, setTopicDraft] = useState('')
 
   const captureRef = useRef<AudioCaptureHandle | null>(null)
   const seqRef = useRef(0)
@@ -71,7 +132,10 @@ export default function App(): ReactElement {
 
   useEffect(() => {
     void window.api.isElevated().then((r) => setElevated(r.elevated)).catch(() => undefined)
-    void window.api.getSettings().then(setSettings)
+    void window.api.getSettings().then((s) => {
+      setSettings(s)
+      setTopicDraft(s.options.referenceTopic ?? '')
+    })
     const offSeg = window.api.onSegment((segment) => {
       setSegments((prev) => {
         const idx = prev.findIndex((s) => s.id === segment.id)
@@ -90,7 +154,10 @@ export default function App(): ReactElement {
       }
     })
     const offStatus = window.api.onStatus(setStatus)
-    const offSettings = window.api.onSettingsChanged(setSettings)
+    const offSettings = window.api.onSettingsChanged((s) => {
+      setSettings(s)
+      setTopicDraft(s.options.referenceTopic ?? '')
+    })
     const offLive = window.api.onLiveCaption(setLiveCaption)
     return () => {
       offSeg()
@@ -274,7 +341,7 @@ export default function App(): ReactElement {
 
   return (
     <div
-      className={`app${expanded ? ' expanded' : ''}`}
+      className={`app${expanded ? ' expanded' : ''}${isLive ? ' is-live' : ''}`}
       style={{ ['--font-scale' as string]: String(fontScale) }}
     >
       <div className="shell">
@@ -350,6 +417,89 @@ export default function App(): ReactElement {
           </div>
           <div className="caption-id">{latest.id || (captionEn ? '…' : '')}</div>
 
+          <div className="topic-bar no-drag">
+            <input
+              className="topic-input"
+              type="text"
+              placeholder="Topic / keyword — e.g. React Native, Performance, Bridge"
+              value={topicDraft}
+              onChange={(e) => setTopicDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  void window.api.saveOptions({ referenceTopic: topicDraft }).then((s) => {
+                    setSettings(s)
+                    setTopicDraft(s.options.referenceTopic ?? '')
+                  })
+                }
+              }}
+              onBlur={() => {
+                void window.api.saveOptions({ referenceTopic: topicDraft }).then((s) => {
+                  setSettings(s)
+                  setTopicDraft(s.options.referenceTopic ?? '')
+                })
+              }}
+            />
+            <button
+              className="btn btn-mini"
+              onClick={() => {
+                void window.api.saveOptions({ referenceTopic: topicDraft }).then((s) => {
+                  setSettings(s)
+                  setTopicDraft(s.options.referenceTopic ?? '')
+                })
+              }}
+              title="Save topic"
+            >
+              Save
+            </button>
+            {topicDraft.trim() ? (
+              <button
+                className="btn btn-mini"
+                onClick={() => {
+                  setTopicDraft('')
+                  void window.api.saveOptions({ referenceTopic: '' }).then(setSettings)
+                }}
+                title="Clear topic"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+          <div className="topic-chips no-drag">
+            {TOPIC_PRESETS.map((preset) => {
+              const active = topicDraft
+                .split(',')
+                .map((s) => s.trim().toLowerCase())
+                .includes(preset.toLowerCase())
+              return (
+                <button
+                  key={preset}
+                  className={`topic-chip${active ? ' active' : ''}`}
+                  onClick={() => {
+                    const parts = topicDraft
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                    const idx = parts.findIndex((p) => p.toLowerCase() === preset.toLowerCase())
+                    let next: string
+                    if (idx >= 0) {
+                      parts.splice(idx, 1)
+                      next = parts.join(', ')
+                    } else {
+                      next = parts.length ? `${parts.join(', ')}, ${preset}` : preset
+                    }
+                    setTopicDraft(next)
+                    void window.api.saveOptions({ referenceTopic: next }).then(setSettings)
+                  }}
+                >
+                  {preset}
+                </button>
+              )
+            })}
+          </div>
+          {settings?.options.referenceTopic?.trim() ? (
+            <div className="hint">Fokus: {settings.options.referenceTopic}</div>
+          ) : null}
+
           {activeAnswer || latest.drafting ? (
             <div className="answer-panel">
               <div className="answer-header">
@@ -369,19 +519,27 @@ export default function App(): ReactElement {
 
               {latest.answers.length > 0 ? (
                 <div className="answer-tabs">
-                  {latest.answers.map((opt) => (
-                    <button
-                      key={opt.id}
-                      className={`answer-tab${(activeAnswer?.id ?? '') === opt.id ? ' active' : ''}`}
-                      onClick={() => setAnswerTab(opt.id)}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+                  {latest.answers.map((opt) => {
+                    const meta = TAB_META[opt.id] ?? { label: opt.label, sub: '', icon: '' }
+                    return (
+                      <button
+                        key={opt.id}
+                        className={`answer-tab${(activeAnswer?.id ?? '') === opt.id ? ' active' : ''}`}
+                        onClick={() => setAnswerTab(opt.id)}
+                      >
+                        <span className="tab-icon">{meta.icon}</span> {meta.label}
+                        {meta.sub ? <span className="tab-sub"> · {meta.sub}</span> : null}
+                      </button>
+                    )
+                  })}
                 </div>
               ) : null}
 
-              {activeAnswer ? <div className="answer-body">{activeAnswer.body}</div> : null}
+              {activeAnswer ? (
+                <div className="answer-body" onDoubleClick={() => void onCopyAnswer()}>
+                  {renderHighlighted(activeAnswer.body)}
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
