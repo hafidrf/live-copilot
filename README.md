@@ -2,7 +2,7 @@
 
 A Windows desktop overlay that listens to **system audio** (speakers, not your mic), shows **live English captions**, translates them to **Indonesian**, detects interview questions, and suggests **ready-to-speak answers** grounded in your CV or notes.
 
-Think of it as Chrome Live Caption plus an interview copilot — useful for mock interviews, meetings, or any English audio playing on your PC.
+Think of it as Chrome Live Caption plus an interview copilot, useful for mock interviews, meetings, or any English audio playing on your PC.
 
 ---
 
@@ -12,9 +12,9 @@ Think of it as Chrome Live Caption plus an interview copilot — useful for mock
 2. **Transcribes English** in near real time (Groq Whisper).
 3. **Translates to Indonesian** so you can follow along quickly.
 4. **Detects questions** and generates three answer styles:
-   - **Instant** — 15–25 seconds, speak it now
-   - **STAR** — structured Situation / Task / Action / Result
-   - **Power** — longer, high-impact answer with concrete proof points
+   - **Instant**: 15–25 seconds, speak it now
+   - **STAR**: structured Situation / Task / Action / Result
+   - **Power**: longer, high-impact answer with concrete proof points
 5. **Uses your context folder** (markdown files with CV, projects, screening notes) so answers match your real background.
 
 ---
@@ -43,7 +43,7 @@ npm run dev
 When the overlay opens:
 
 1. Click **Settings** and paste your **Groq API key** (required).
-2. Optionally choose a **Context folder** — a directory with `.md` files about your experience (see below).
+2. Optionally choose a **Context folder**: a directory with `.md` files about your experience (see below).
 3. Play English audio (e.g. a YouTube mock interview) and make sure sound comes from your **speakers**.
 4. Click **Listen** (or press `Ctrl+Shift+Space`).
 
@@ -107,7 +107,7 @@ xattr -cr /Applications/Live\ Copilot.app
 
 1. `System Settings → Privacy & Security → Screen Recording` → enable **Live Copilot** (restart app after).
 2. Play YouTube/Zoom via speakers and click **Listen**.
-3. Alternative: install [BlackHole](https://github.com/ExistentialAudio/BlackHole) (free virtual audio driver) and select it as input — the app auto-detects `BlackHole` devices.
+3. Alternative: install [BlackHole](https://github.com/ExistentialAudio/BlackHole) (free virtual audio driver) and select it as input; the app auto-detects `BlackHole` devices.
 
 > Note: macOS builds are currently **unsigned** (`notarize: false`). For distribution, add Apple code signing + notarization in `electron-builder.yml`.
 
@@ -150,7 +150,7 @@ You can also set keys via environment variables at build/dev time (see `.env.exa
 
 ### “Could not start video source” / capture fails
 
-**Windows — most common cause:** the app (or Cursor/terminal) is running **as Administrator**. Windows blocks screen/audio capture for elevated processes on Electron 37+.
+**Windows, most common cause:** the app (or Cursor/terminal) is running **as Administrator**. Windows blocks screen/audio capture for elevated processes on Electron 37+.
 
 **Fix (Windows):**
 
@@ -233,13 +233,13 @@ STT debug log (after a session): `%APPDATA%\live-copilot\debug-stt.jsonl`
 This tool is intended for **personal interview preparation** and accessibility (live captions). Use responsibly:
 
 - Respect company policies and local laws regarding recording or assistance in live interviews or exams.
-- API providers process audio/text you send them — review their terms before use.
+- API providers process audio/text you send them; review their terms before use.
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE) if present, or use at your own discretion for this personal project.
+MIT; see [LICENSE](LICENSE) if present, or use at your own discretion for this personal project.
 
 ---
 
